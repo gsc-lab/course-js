@@ -1,0 +1,129 @@
+<!-- 
+과제!
+- 1단계: 코드 이해 (주석 작성: JS를 이용하여 HTML element 조정 방법 확인)
+- 2단계: “동일 기능”을 다른 구조로 재작성
+- 3단계: 기능 1개 “자유 확장” 
+-->
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>DOM CRUD Practice</title>
+</head>
+<body>
+  <h2>DOM CRUD (Add / Delete / Edit)</h2>
+
+  <input id="txt" type="text" placeholder="할 일을 입력" />
+  <button id="btnAdd">추가</button>
+
+  <ul id="list"></ul>
+
+  <script>
+    const txt = document.getElementById("txt");
+    const btnAdd = document.getElementById("btnAdd");
+    const list = document.getElementById("list");
+
+    function createItem(text) {
+      const li = document.createElement("li");
+
+      const span = document.createElement("span");
+      span.textContent = text;
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = text;
+      input.style.display = "none";
+
+      const btnEdit = document.createElement("button");
+      btnEdit.textContent = "수정";
+
+      const btnSave = document.createElement("button");
+      btnSave.textContent = "저장";
+      btnSave.style.display = "none";
+
+      const btnCancel = document.createElement("button");
+      btnCancel.textContent = "취소";
+      btnCancel.style.display = "none";
+
+      const btnDel = document.createElement("button");
+      btnDel.textContent = "삭제";
+
+      let prevText = text;
+
+      function enterEditMode() {
+        prevText = span.textContent;
+        input.value = prevText;
+
+        span.style.display = "none";
+        input.style.display = "";
+
+        btnEdit.style.display = "none";
+        btnSave.style.display = "";
+        btnCancel.style.display = "";
+
+        btnDel.disabled = true;
+
+        input.focus();
+        input.select();
+      }
+
+      function exitEditMode() {
+        span.style.display = "";
+        input.style.display = "none";
+
+        btnEdit.style.display = "";
+        btnSave.style.display = "none";
+        btnCancel.style.display = "none";
+
+        btnDel.disabled = false;
+      }
+
+      btnEdit.addEventListener("click", enterEditMode);
+
+      btnSave.addEventListener("click", () => {
+        const value = input.value.trim();
+        if (!value) return;
+        span.textContent = value;
+        exitEditMode();
+      });
+
+      btnCancel.addEventListener("click", () => {
+        span.textContent = prevText;
+        exitEditMode();
+      });
+
+      btnDel.addEventListener("click", () => li.remove());
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") btnSave.click();
+        if (e.key === "Escape") btnCancel.click();
+      });
+
+      li.appendChild(span);
+      li.appendChild(input);
+      li.appendChild(document.createTextNode(" "));
+      li.appendChild(btnEdit);
+      li.appendChild(btnSave);
+      li.appendChild(btnCancel);
+      li.appendChild(btnDel);
+
+      return li;
+    }
+
+    btnAdd.addEventListener("click", () => {
+      const value = txt.value.trim();
+      if (!value) return;
+
+      list.appendChild(createItem(value));
+
+      txt.value = "";
+      txt.focus();
+    });
+
+    txt.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") btnAdd.click();
+    });
+  </script>
+</body>
+</html>

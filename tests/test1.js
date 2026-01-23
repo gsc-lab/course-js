@@ -1,8 +1,15 @@
+
 class A {
-    constructor() {this.x = 1;}
-    f() { console.log(this.x);}
+    x = 2;
+
+   this.test() {
+        console.log(this.x);
+    }
 }
 
-const a = new A();
+a1 = new A();
+const f1 = a1.prtInfo;
+const f2 = a1.test;
 
-setTimeout(() => a.f(), 0);
+f1();
+f2();
