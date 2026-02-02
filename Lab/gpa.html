@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성적 계산 프로그램</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        /* 입력 폼 스타일 */
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 120px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        button {
+            background-color: #4a90d9;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        /* 테이블 스타일 */
+        .table-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4a90d9;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 성적 계산 프로그램</h1>
+
+    <!-- 입력 폼 섹션 -->
+    <div class="input-section">
+        <h2>학생 정보 입력</h2>
+        <form id="studentForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="studentId">학번</label>
+                    <input type="text" id="studentId" placeholder="예: 20240001">
+                </div>
+                <div class="form-group">
+                    <label for="name">이름</label>
+                    <input type="text" id="name" placeholder="예: 홍길동">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="kor">국어</label>
+                    <input type="number" id="kor" min="0" max="100" placeholder="0~100">
+                </div>
+                <div class="form-group">
+                    <label for="eng">영어</label>
+                    <input type="number" id="eng" min="0" max="100" placeholder="0~100">
+                </div>
+                <div class="form-group">
+                    <label for="math">수학</label>
+                    <input type="number" id="math" min="0" max="100" placeholder="0~100">
+                </div>
+            </div>
+            <button type="submit">추가 (Add)</button>
+        </form>
+    </div>
+
+    <!-- 테이블 출력 섹션 -->
+    <div class="table-section">
+        <h2>학생 목록</h2>
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>학번</th>
+                    <th>이름</th>
+                    <th>국어</th>
+                    <th>영어</th>
+                    <th>수학</th>
+                    <th>합계</th>
+                    <th>평균</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 동적으로 생성되는 영역 -->
+            </tbody>
+        </table>
+        <p id="noData" class="no-data">등록된 학생이 없습니다.</p>
+    </div>
+
+    <script>
+        /*
+         * ========================================
+         *   📝 성적 계산 프로그램 - 실습 과제
+         * ========================================
+         *
+         * [과제 목표]
+         * 학생 정보를 입력받아 성적을 계산하고 테이블로 출력하는 프로그램 완성
+         *
+         * [요구사항]
+         * 1. Student 클래스 구현
+         * 2. 유효성 검사 함수 구현
+         * 3. 테이블 렌더링 함수 구현
+         * 4. 폼 제출 이벤트 핸들러 구현
+         *
+         * [제약조건]
+         * - map, filter, reduce 등 고차함수 사용 금지 (기본 for문 사용)
+         * - 평균은 소수점 둘째 자리까지 표시 (toFixed(2) 활용)
+         */
+
+
+        // =============================================
+        // 1. Student 클래스 정의
+        // =============================================
+        /*
+         * [클래스 필드]
+         * - studentId: 학번 (문자열)
+         * - name: 이름 (문자열)
+         * - kor: 국어 점수 (숫자)
+         * - eng: 영어 점수 (숫자)
+         * - math: 수학 점수 (숫자)
+         * - total: 합계 (kor + eng + math)
+         * - avg: 평균 (total / 3, 소수점 둘째 자리)
+         */
+        class Student {
+            // TODO: 생성자(constructor) 구현
+            // - 매개변수: studentId, name, kor, eng, math
+            // - this를 사용하여 각 필드에 값 저장
+            // - total 계산: 세 과목 점수의 합
+            // - avg 계산: total을 3으로 나눈 값 (toFixed(2)로 소수점 처리)
+            constructor(studentId, name, kor, eng, math) {
+
+            }
+
+            // TODO: toRow(index) 메서드 구현
+            // - 매개변수 index: 테이블에 표시할 순번 (No)
+            // - 반환값: <tr> 요소 (document.createElement('tr') 사용)
+            //
+            // [구현 단계]
+            // 1) tr 요소 생성
+            // 2) 표시할 데이터 배열 만들기: [index, studentId, name, kor, eng, math, total, avg]
+            // 3) for문으로 배열 순회하며 각 데이터에 대해:
+            //    - td 요소 생성 (document.createElement('td'))
+            //    - td.textContent에 데이터 값 설정
+            //    - tr에 td 추가 (tr.appendChild(td))
+            // 4) 완성된 tr 반환
+            toRow(index) {
+
+            }
+        }
+
+
+        // =============================================
+        // 2. 전역 변수 및 DOM 요소 참조
+        // =============================================
+
+        // TODO: 학생 객체를 저장할 빈 배열 선언
+        // 힌트: var students = [];
+
+
+        // TODO: DOM 요소 참조 변수 선언
+        // 힌트: document.getElementById() 사용
+        // - form: 'studentForm' 요소
+        // - tableBody: 'tableBody' 요소
+        // - noDataMsg: 'noData' 요소
+
+
+
+        // =============================================
+        // 3. 유효성 검사 함수
+        // =============================================
+        /*
+         * [검사 항목]
+         * - 학번: 빈 문자열 불가 (trim() 후 체크)
+         * - 이름: 빈 문자열 불가 (trim() 후 체크)
+         * - 국어/영어/수학: 숫자이며 0~100 범위
+         *
+         * [반환값]
+         * - 유효하면 true
+         * - 유효하지 않으면 alert() 후 false
+         */
+        function validateInput(studentId, name, kor, eng, math) {
+            // TODO: 학번 빈 값 체크
+            // 힌트: if (studentId.trim() === '') { alert(...); return false; }
+
+
+            // TODO: 이름 빈 값 체크
+
+
+            // TODO: 국어 점수 검사 (숫자인지, 0~100 범위인지)
+            // 힌트: isNaN(kor)로 숫자 여부 체크
+
+
+            // TODO: 영어 점수 검사
+
+
+            // TODO: 수학 점수 검사
+
+
+            // 모든 검사 통과 시 true 반환
+            return true;
+        }
+
+
+        // =============================================
+        // 4. 테이블 렌더링 함수
+        // =============================================
+        /*
+         * [동작]
+         * 1) 기존 tbody 내용 비우기 (innerHTML = '')
+         * 2) students 배열이 비어있으면 "등록된 학생이 없습니다" 메시지 표시
+         * 3) 배열에 데이터가 있으면 메시지 숨기고, for문으로 각 학생을 테이블에 추가
+         */
+        function renderTable() {
+            // TODO: 기존 tbody 내용 초기화
+            // 힌트: tableBody.innerHTML = '';
+
+
+            // TODO: students 배열이 비어있는지 체크
+            // - 비어있으면: noDataMsg.style.display = 'block'; 후 return
+            // - 데이터 있으면: noDataMsg.style.display = 'none';
+
+
+            // TODO: for문으로 students 배열 순회
+            // - 각 학생 객체의 toRow(i + 1) 메서드 호출 (순번은 1부터 시작)
+            // - 반환된 tr을 tableBody에 추가 (tableBody.appendChild(row))
+
+        }
+
+
+        // =============================================
+        // 5. 폼 초기화 함수
+        // =============================================
+        /*
+         * 모든 입력 필드의 값을 빈 문자열로 초기화
+         */
+        function resetForm() {
+            // TODO: 각 입력 필드의 value를 '' 로 설정
+            // 대상 필드: studentId, name, kor, eng, math
+
+        }
+
+
+        // =============================================
+        // 6. 폼 제출 이벤트 핸들러
+        // =============================================
+        /*
+         * [처리 순서]
+         * 1) 기본 폼 제출 동작 방지 (event.preventDefault())
+         * 2) 입력값 가져오기
+         * 3) 유효성 검사
+         * 4) Student 객체 생성
+         * 5) 배열에 추가
+         * 6) 폼 초기화
+         * 7) 테이블 재렌더링
+         */
+        form.addEventListener('submit', function(event) {
+            // TODO: 기본 폼 제출 동작 방지
+            // 힌트: event.preventDefault();
+
+
+            // TODO: 입력값 가져오기
+            // - studentId, name: document.getElementById(...).value
+            // - kor, eng, math: parseInt()로 숫자 변환 필요
+
+
+            // TODO: 유효성 검사 호출
+            // - validateInput() 결과가 false면 return하여 중단
+
+
+            // TODO: Student 객체 생성
+            // 힌트: var student = new Student(studentId, name, kor, eng, math);
+
+
+            // TODO: students 배열에 추가
+            // 힌트: students.push(student);
+
+
+            // TODO: 폼 초기화 함수 호출
+
+
+            // TODO: 테이블 렌더링 함수 호출
+
+        });
+
+
+        // =============================================
+        // 7. 초기 실행
+        // =============================================
+        // TODO: 페이지 로드 시 테이블 초기 렌더링 호출
+        // 힌트: renderTable();
+
+    </script>
+</body>
+</html>

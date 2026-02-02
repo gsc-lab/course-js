@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Document</title>
+</head>
+<body>
+  <input type="number" id="counter" value="0">
+  <button id="btn">Start</button>
+
+  <script>
+    const counter = document.getElementById('counter');
+    const btn = document.getElementById('btn');
+
+    function makerCounter(btn, out) {
+      let count = Number(out.value) || 0;
+      let isRunning = false;
+      let timerId = null;
+
+      return () => {
+        if (!isRunning) {
+          timerId = setInterval(() => {
+            count++;
+            out.value = count;
+          }, 1000);
+
+          btn.textContent = "Stop";
+          isRunning = true;
+        } else {
+          clearInterval(timerId);
+          timerId = null;
+
+          btn.textContent = "Start";
+          isRunning = false;
+        }
+      };
+    }
+
+    btn.addEventListener('click', makerCounter(btn, counter));
+  </script>
+</body>
+</html>

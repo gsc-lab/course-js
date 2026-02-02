@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성적 계산 프로그램</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        /* 입력 폼 스타일 */
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 120px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        button {
+            background-color: #4a90d9;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        /* 테이블 스타일 */
+        .table-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4a90d9;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 성적 계산 프로그램</h1>
+
+    <!-- 입력 폼 섹션 -->
+    <div class="input-section">
+        <h2>학생 정보 입력</h2>
+        <form id="studentForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="studentId">학번</label>
+                    <input type="text" id="studentId" placeholder="예: 20240001">
+                </div>
+                <div class="form-group">
+                    <label for="name">이름</label>
+                    <input type="text" id="name" placeholder="예: 홍길동">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="kor">국어</label>
+                    <input type="number" id="kor" min="0" max="100" placeholder="0~100">
+                </div>
+                <div class="form-group">
+                    <label for="eng">영어</label>
+                    <input type="number" id="eng" min="0" max="100" placeholder="0~100">
+                </div>
+                <div class="form-group">
+                    <label for="math">수학</label>
+                    <input type="number" id="math" min="0" max="100" placeholder="0~100">
+                </div>
+            </div>
+            <button type="submit">추가 (Add)</button>
+        </form>
+    </div>
+
+    <!-- 테이블 출력 섹션 -->
+    <div class="table-section">
+        <h2>학생 목록</h2>
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>학번</th>
+                    <th>이름</th>
+                    <th>국어</th>
+                    <th>영어</th>
+                    <th>수학</th>
+                    <th>합계</th>
+                    <th>평균</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 동적으로 생성되는 영역 -->
+            </tbody>
+        </table>
+        <p id="noData" class="no-data">등록된 학생이 없습니다.</p>
+    </div>
+
+    <script>
+        // ===== Student 클래스 정의 =====
+        class Student {
+            constructor(studentId, name, kor, eng, math) {
+                this.studentId = studentId;
+                this.name = name;
+                this.kor = kor;
+                this.eng = eng;
+                this.math = math;
+                // 합계 계산
+                this.total = kor + eng + math;
+                // 평균 계산 (소수점 둘째 자리까지)
+                this.avg = (this.total / 3).toFixed(2);
+            }
+
+            // 테이블 행(tr) 요소 생성 메서드
+            toRow(index) {
+                var tr = document.createElement('tr');
+                // 각 셀 데이터 배열
+                var cellData = [
+                    index,           // No (순번)
+                    this.studentId,  // 학번
+                    this.name,       // 이름
+                    this.kor,        // 국어
+                    this.eng,        // 영어
+                    this.math,       // 수학
+                    this.total,      // 합계
+                    this.avg         // 평균
+                ];
+                // for문으로 각 셀 생성
+                for (var i = 0; i < cellData.length; i++) {
+                    var td = document.createElement('td');
+                    td.textContent = cellData[i];
+                    tr.appendChild(td);
+                }
+                return tr;
+            }
+        }
+
+        // ===== 전역 변수 =====
+        var students = []; // 학생 객체 저장 배열
+
+        // ===== DOM 요소 참조 =====
+        var form = document.getElementById('studentForm');
+        var tableBody = document.getElementById('tableBody');
+        var noDataMsg = document.getElementById('noData');
+
+        // ===== 유효성 검사 함수 =====
+        function validateInput(studentId, name, kor, eng, math) {
+            // 학번 빈 값 체크
+            if (studentId.trim() === '') {
+                alert('학번을 입력해주세요.');
+                return false;
+            }
+            // 이름 빈 값 체크
+            if (name.trim() === '') {
+                alert('이름을 입력해주세요.');
+                return false;
+            }
+            // 점수 숫자 및 범위 체크
+            if (isNaN(kor) || kor < 0 || kor > 100) {
+                alert('국어 점수는 0~100 사이의 숫자여야 합니다.');
+                return false;
+            }
+            if (isNaN(eng) || eng < 0 || eng > 100) {
+                alert('영어 점수는 0~100 사이의 숫자여야 합니다.');
+                return false;
+            }
+            if (isNaN(math) || math < 0 || math > 100) {
+                alert('수학 점수는 0~100 사이의 숫자여야 합니다.');
+                return false;
+            }
+            return true;
+        }
+
+        // ===== 테이블 렌더링 함수 =====
+        function renderTable() {
+            // 기존 tbody 내용 초기화
+            tableBody.innerHTML = '';
+
+            // 데이터 없을 때 메시지 표시/숨김
+            if (students.length === 0) {
+                noDataMsg.style.display = 'block';
+                return;
+            }
+            noDataMsg.style.display = 'none';
+
+            // for문으로 각 학생 행 추가
+            for (var i = 0; i < students.length; i++) {
+                var row = students[i].toRow(i + 1); // 순번은 1부터 시작
+                tableBody.appendChild(row);
+            }
+        }
+
+        // ===== 폼 초기화 함수 =====
+        function resetForm() {
+            document.getElementById('studentId').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('kor').value = '';
+            document.getElementById('eng').value = '';
+            document.getElementById('math').value = '';
+        }
+
+        // ===== 폼 제출 이벤트 핸들러 =====
+        form.addEventListener('submit', function(event) {
+            // 기본 폼 제출 동작 방지
+            event.preventDefault();
+
+            // 입력값 가져오기
+            var studentId = document.getElementById('studentId').value;
+            var name = document.getElementById('name').value;
+            var kor = parseInt(document.getElementById('kor').value);
+            var eng = parseInt(document.getElementById('eng').value);
+            var math = parseInt(document.getElementById('math').value);
+
+            // 유효성 검사 - 실패 시 중단
+            if (!validateInput(studentId, name, kor, eng, math)) {
+                return;
+            }
+
+            // Student 객체 생성
+            var student = new Student(studentId, name, kor, eng, math);
+
+            // 배열에 추가
+            students.push(student);
+
+            // 폼 초기화
+            resetForm();
+
+            // 테이블 재렌더링
+            renderTable();
+        });
+
+        // ===== 초기 렌더링 =====
+        renderTable();
+    </script>
+</body>
+</html>
