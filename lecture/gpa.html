@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
         * {
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 900px;
@@ -15,33 +17,39 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         /* 입력 폼 스타일 */
         .input-section {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+
         .form-row {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             margin-bottom: 15px;
         }
+
         .form-group {
             display: flex;
             flex-direction: column;
         }
+
         .form-group label {
             font-weight: bold;
             margin-bottom: 5px;
             color: #555;
         }
+
         .form-group input {
             padding: 8px 12px;
             border: 1px solid #ddd;
@@ -49,10 +57,12 @@
             font-size: 14px;
             width: 120px;
         }
+
         .form-group input:focus {
             outline: none;
             border-color: #4a90d9;
         }
+
         button {
             background-color: #4a90d9;
             color: white;
@@ -63,32 +73,40 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
+
         button:hover {
             background-color: #357abd;
         }
+
         /* 테이블 스타일 */
         .table-section {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #4a90d9;
             color: white;
         }
+
         tr:hover {
             background-color: #f9f9f9;
         }
+
         .no-data {
             text-align: center;
             color: #888;
@@ -96,6 +114,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>🎓 성적 계산 프로그램</h1>
 
@@ -171,9 +190,9 @@
 
             // 테이블 행(tr) 요소 생성 메서드
             toRow(index) {
-                var tr = document.createElement('tr');
+                const tr = document.createElement('tr');
                 // 각 셀 데이터 배열
-                var cellData = [
+                const cellData = [
                     index,           // No (순번)
                     this.studentId,  // 학번
                     this.name,       // 이름
@@ -184,8 +203,8 @@
                     this.avg         // 평균
                 ];
                 // for문으로 각 셀 생성
-                for (var i = 0; i < cellData.length; i++) {
-                    var td = document.createElement('td');
+                for (let i = 0; i < cellData.length; i++) {
+                    const td = document.createElement('td');
                     td.textContent = cellData[i];
                     tr.appendChild(td);
                 }
@@ -194,12 +213,12 @@
         }
 
         // ===== 전역 변수 =====
-        var students = []; // 학생 객체 저장 배열
+        const students = []; // 학생 객체 저장 배열
 
         // ===== DOM 요소 참조 =====
-        var form = document.getElementById('studentForm');
-        var tableBody = document.getElementById('tableBody');
-        var noDataMsg = document.getElementById('noData');
+        const form = document.getElementById('studentForm');
+        const tableBody = document.getElementById('tableBody');
+        const noDataMsg = document.getElementById('noData');
 
         // ===== 유효성 검사 함수 =====
         function validateInput(studentId, name, kor, eng, math) {
@@ -242,8 +261,8 @@
             noDataMsg.style.display = 'none';
 
             // for문으로 각 학생 행 추가
-            for (var i = 0; i < students.length; i++) {
-                var row = students[i].toRow(i + 1); // 순번은 1부터 시작
+            for (let i = 0; i < students.length; i++) {
+                const row = students[i].toRow(i + 1); // 순번은 1부터 시작
                 tableBody.appendChild(row);
             }
         }
@@ -258,16 +277,16 @@
         }
 
         // ===== 폼 제출 이벤트 핸들러 =====
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', function (event) {
             // 기본 폼 제출 동작 방지
             event.preventDefault();
 
             // 입력값 가져오기
-            var studentId = document.getElementById('studentId').value;
-            var name = document.getElementById('name').value;
-            var kor = parseInt(document.getElementById('kor').value);
-            var eng = parseInt(document.getElementById('eng').value);
-            var math = parseInt(document.getElementById('math').value);
+            const studentId = document.getElementById('studentId').value;
+            const name = document.getElementById('name').value;
+            const kor = parseInt(document.getElementById('kor').value);
+            const eng = parseInt(document.getElementById('eng').value);
+            const math = parseInt(document.getElementById('math').value);
 
             // 유효성 검사 - 실패 시 중단
             if (!validateInput(studentId, name, kor, eng, math)) {
@@ -275,7 +294,7 @@
             }
 
             // Student 객체 생성
-            var student = new Student(studentId, name, kor, eng, math);
+            const student = new Student(studentId, name, kor, eng, math);
 
             // 배열에 추가
             students.push(student);
@@ -291,4 +310,5 @@
         renderTable();
     </script>
 </body>
+
 </html>
