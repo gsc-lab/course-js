@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        /* ========== 기본 스타일 ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ========== 컨테이너 ========== */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ========== 타이틀 ========== */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        /* ========== 입력 영역 ========== */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #todoInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #todoInput:focus {
+            border-color: #667eea;
+        }
+
+        #addBtn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #addBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* ========== 필터 버튼 ========== */
+        .filter-area {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* ========== 할 일 목록 ========== */
+        #todoList {
+            list-style: none;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover {
+            background: #e9ecef;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* 체크박스 */
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        /* 할 일 텍스트 */
+        .todo-text {
+            flex: 1;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        /* 삭제 버튼 */
+        .delete-btn {
+            padding: 8px 15px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .todo-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #ee5a5a;
+        }
+
+        /* ========== 통계 영역 ========== */
+        .stats {
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* ========== 빈 상태 메시지 ========== */
+        .empty-message {
+            text-align: center;
+            color: #aaa;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+
+        <!-- 입력 영역 -->
+        <div class="input-area">
+            <input type="text" id="todoInput" placeholder="할 일을 입력하세요...">
+            <button id="addBtn">추가</button>
+        </div>
+
+        <!-- 필터 버튼 -->
+        <div class="filter-area">
+            <button class="filter-btn active" data-filter="all">전체</button>
+            <button class="filter-btn" data-filter="active">진행중</button>
+            <button class="filter-btn" data-filter="completed">완료</button>
+        </div>
+
+        <!-- 할 일 목록 -->
+        <ul id="todoList"></ul>
+
+        <!-- 통계 -->
+        <div class="stats" id="stats"></div>
+    </div>
+
+    <script>
+        /**
+         * To-Do List 앱 (정답)
+         */
+        const todoApp = {
+            // 할 일 목록 배열
+            todos: [],
+
+            // 현재 필터 상태
+            currentFilter: 'all',
+
+            // 앱 초기화
+            init() {
+                this.loadFromStorage();
+                this.bindEvents();
+                this.render();
+            },
+
+            // 이벤트 바인딩
+            bindEvents() {
+                // 추가 버튼 클릭
+                document.getElementById('addBtn').addEventListener('click', () => {
+                    this.addTodo();
+                });
+
+                // Enter 키 입력
+                document.getElementById('todoInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.addTodo();
+                    }
+                });
+
+                // 필터 버튼 클릭 (이벤트 위임)
+                document.querySelector('.filter-area').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('filter-btn')) {
+                        this.setFilter(e.target.dataset.filter);
+                    }
+                });
+
+                // 할 일 목록 클릭 (이벤트 위임)
+                document.getElementById('todoList').addEventListener('click', (e) => {
+                    const item = e.target.closest('.todo-item');
+                    if (!item) return;
+
+                    const id = parseInt(item.dataset.id);
+
+                    if (e.target.classList.contains('todo-checkbox')) {
+                        this.toggleTodo(id);
+                    } else if (e.target.classList.contains('delete-btn')) {
+                        this.deleteTodo(id);
+                    }
+                });
+            },
+
+            // 할 일 추가
+            addTodo() {
+                const input = document.getElementById('todoInput');
+                const text = input.value.trim();
+
+                if (text === '') {
+                    alert('할 일을 입력해주세요!');
+                    return;
+                }
+
+                const newTodo = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                };
+
+                this.todos.push(newTodo);
+                input.value = '';
+                input.focus();
+
+                this.saveToStorage();
+                this.render();
+            },
+
+            // 완료 상태 토글
+            toggleTodo(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (todo) {
+                    todo.completed = !todo.completed;
+                    this.saveToStorage();
+                    this.render();
+                }
+            },
+
+            // 할 일 삭제
+            deleteTodo(id) {
+                this.todos = this.todos.filter(t => t.id !== id);
+                this.saveToStorage();
+                this.render();
+            },
+
+            // 필터 설정
+            setFilter(filter) {
+                this.currentFilter = filter;
+
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === filter);
+                });
+
+                this.render();
+            },
+
+            // 필터링된 목록 가져오기
+            getFilteredTodos() {
+                switch (this.currentFilter) {
+                    case 'active':
+                        return this.todos.filter(t => !t.completed);
+                    case 'completed':
+                        return this.todos.filter(t => t.completed);
+                    default:
+                        return this.todos;
+                }
+            },
+
+            // 화면 렌더링
+            render() {
+                const list = document.getElementById('todoList');
+                const filteredTodos = this.getFilteredTodos();
+
+                if (filteredTodos.length === 0) {
+                    list.innerHTML = '<li class="empty-message">할 일이 없습니다.</li>';
+                } else {
+                    list.innerHTML = filteredTodos.map(todo => `
+                        <li class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
+                            <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''}>
+                            <span class="todo-text">${todo.text}</span>
+                            <button class="delete-btn">삭제</button>
+                        </li>
+                    `).join('');
+                }
+
+                this.updateStats();
+            },
+
+            // 통계 업데이트
+            updateStats() {
+                const total = this.todos.length;
+                const completed = this.todos.filter(t => t.completed).length;
+                const active = total - completed;
+
+                document.getElementById('stats').textContent =
+                    `전체: ${total}개 | 진행중: ${active}개 | 완료: ${completed}개`;
+            },
+
+            // 로컬 스토리지에 저장
+            saveToStorage() {
+                localStorage.setItem('todos', JSON.stringify(this.todos));
+            },
+
+            // 로컬 스토리지에서 불러오기
+            loadFromStorage() {
+                const saved = localStorage.getItem('todos');
+                if (saved) {
+                    this.todos = JSON.parse(saved);
+                }
+            }
+        };
+
+        // 앱 시작
+        todoApp.init();
+    </script>
+</body>
+</html>
